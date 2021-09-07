@@ -1,25 +1,30 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from "react";
+import "./App.css";
+import Navigation from "./components/Navigation/Navigation";
+import useSelectors from "./Util/hooks/selector";
+import { useAuthStore } from "./store/AuthStore";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const App = () => {
+  const logout = useAuthStore((state) => state.logout);
+  const { loggedInAt, tokenExpiration } = useSelectors();
+
+  useEffect(() => {
+    if (
+      tokenExpiration > 0 &&
+      new Date().getTime() - loggedInAt > tokenExpiration * 60 * 60 * 1000
+    ) {
+      logout();
+    } else {
+      console.log(
+        "Some time is remaining -> ",
+        (tokenExpiration * 60 * 60 * 1000 -
+          (new Date().getTime() - loggedInAt)) /
+          (60 * 60 * 1000)
+      );
+    }
+  }, [loggedInAt, logout, tokenExpiration]);
+
+  return <Navigation />;
+};
 
 export default App;
